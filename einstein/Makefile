@@ -1,0 +1,24 @@
+
+CC = gcc
+CPPFLAGS = -D_FORTIFY_SOURCE=2
+OPTCFLAGS = -O2
+TESTFLAGS = -DTEST
+WARNFLAGS = -Wall
+CFLAGS = $(OPTCFLAGS) $(WARNFLAGS)
+LDFLAGS = -Wl,--as-needed
+LIBS =
+
+TEST = test
+OBJECTS = try.o rule.o game.o
+HEADERS = einstein.h
+
+all: $(TEST)
+
+%.o: %.c $(HEADERS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
+
+$(TEST):	$(OBJECTS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+
+clean:
+	rm -f $(OBJECTS) $(TEST)
