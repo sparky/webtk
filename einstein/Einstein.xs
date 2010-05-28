@@ -96,6 +96,31 @@ try( self )
 		RETVAL
 
 SV *
+try_get_row( self, row )
+	Game::Einstein	self
+	int row
+	INIT:
+		AV *	rowh;
+		int col;
+		try_t *t;
+	CODE:
+	{
+		t = self->t;
+
+		if ( row < 0 || row >= t->cols )
+			croak( "row number must be between 0 and number of rows" );
+
+		rowh = (AV *)sv_2mortal( (SV *) newAV() );
+		for ( col = 0; col < t->cols; col++ ) {
+			try_cell_t cell = CELL( t, row, col );
+			av_push( rowh, newSVuv( cell ) );
+		}
+		RETVAL = newRV( (SV *) rowh );
+	}
+	OUTPUT:
+		RETVAL
+
+SV *
 rules( self )
 	Game::Einstein	self
 	INIT:
