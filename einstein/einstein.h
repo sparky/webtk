@@ -56,11 +56,11 @@ try_is_defined( try_t *t, cell_t col, cell_t row )
 }
 
 /* exclude some element from cell */
-void
+int
 try_exclude( try_t *t, cell_t col, cell_t row, cell_t el );
 
 /* set some element in cell */
-void
+int
 try_set( try_t *t, cell_t col, cell_t row, cell_t el );
 
 /* alloc and prepare try board */

@@ -103,23 +103,28 @@ try_find( try_t *t, cell_t row, cell_t el )
 }
 */
 
-void
+int
 try_exclude( try_t *t, cell_t col, cell_t row, cell_t el )
 {
 	try_cell_t mask = 1 << el;
 	if ( ! (CELL( t, row, col ) & mask ) )
-		return;
+		return 0;
 
 	CELL( t, row, col ) &= ~mask;
 
 	try_check_singles( t, row );
+
+	return 1;
 }
 
-void
+int
 try_set( try_t *t, cell_t col, cell_t row, cell_t el )
 {
 	int i;
 	try_cell_t mask = 1 << el;
+
+	if ( ! (CELL( t, row, col ) & mask ) )
+		return 0;
 
 	for ( i = 0; i < t->cols; i++ )
 		CELL( t, row, i ) &= ~mask;
@@ -127,6 +132,8 @@ try_set( try_t *t, cell_t col, cell_t row, cell_t el )
 	CELL( t, row, col ) = mask;
 
 	try_check_singles( t, row );
+
+	return 1;
 }
 
 try_t *

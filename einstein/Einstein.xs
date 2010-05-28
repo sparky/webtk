@@ -134,7 +134,7 @@ try_get_row( self, row )
 	{
 		t = self->t;
 
-		if ( row < 0 || row >= t->cols )
+		if ( row < 0 || row >= t->rows )
 			croak( "row number must be between 0 and number of rows" );
 
 		rowh = (AV *)sv_2mortal( (SV *) newAV() );
@@ -169,6 +169,51 @@ rules( self )
 		} while ( ( r = r->next ) != NULL );
 
 		RETVAL = newRV( (SV *) rule_list );
+	}
+	OUTPUT:
+		RETVAL
+
+int
+set( self, col, row, el )
+	Game::Einstein	self
+	int	col
+	int	row
+	int	el
+	INIT:
+		try_t *t;
+	CODE:
+	{
+		t = self->t;
+		if ( col < 0 || col >= t->cols )
+			croak( "col number must be between 0 and number of columns" );
+		if ( row < 0 || row >= t->rows )
+			croak( "row number must be between 0 and number of rows" );
+		if ( el < 0 || el >= t->cols )
+			croak( "el number must be between 0 and number of columns" );
+		RETVAL = try_set( t, col, row, el );
+	}
+	OUTPUT:
+		RETVAL
+
+
+int
+exclude( self, col, row, el )
+	Game::Einstein	self
+	int	col
+	int	row
+	int	el
+	INIT:
+		try_t *t;
+	CODE:
+	{
+		t = self->t;
+		if ( col < 0 || col >= t->cols )
+			croak( "col number must be between 0 and number of columns" );
+		if ( row < 0 || row >= t->rows )
+			croak( "row number must be between 0 and number of rows" );
+		if ( el < 0 || el >= t->cols )
+			croak( "el number must be between 0 and number of columns" );
+		RETVAL = try_exclude( t, col, row, el );
 	}
 	OUTPUT:
 		RETVAL
