@@ -28,7 +28,13 @@ new(class, cols=6, rows=6)
 		RETVAL
 
 void
+print(self)
+	Game::Einstein	self
+	CODE:
+		game_print( self );
+
+void
 DESTROY(self)
 	Game::Einstein self
 	CODE:
-		Safefree(self);
+		game_free( self );
