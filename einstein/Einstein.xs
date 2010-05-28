@@ -8,6 +8,7 @@
 typedef game_t *Game__Einstein;
 
 MODULE = Game::Einstein		PACKAGE = Game::Einstein
+PROTOTYPES: ENABLE
 
 
 Game::Einstein
@@ -74,25 +75,18 @@ try( self )
 	Game::Einstein	self
 	INIT:
 		AV *	rows;
-		int row, col, el;
+		int row, col;
 		try_t *t;
-		char bits[17];
-		STRLEN cols;
 	CODE:
 	{
 		t = self->t;
-		cols = t->cols;
-		bits[ cols ] = '\0';
 
 		rows = (AV *)sv_2mortal( (SV *) newAV() );
 		for ( row = 0; row < t->rows; row++ ) {
 			AV *rowh = (AV *)sv_2mortal( (SV *) newAV() );
 			for ( col = 0; col < t->cols; col++ ) {
-				register try_cell_t cell = CELL( t, row, col );
-				register int el;
-				for ( el = 0; el < t->cols; el++ )
-					bits[ el ] = cell & (1 << el) ? '1' : '0';
-				av_push( rowh, newSVpv( bits, cols ) );
+				try_cell_t cell = CELL( t, row, col );
+				av_push( rowh, newSVuv( cell ) );
 			}
 			av_push( rows, newRV( (SV *) rowh ) );
 		}
