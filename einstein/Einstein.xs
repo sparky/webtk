@@ -44,6 +44,33 @@ print(self)
 	CODE:
 		game_print( self );
 
+int
+cols( self )
+	Game::Einstein	self
+	ALIAS:
+		columns = 1
+	CODE:
+		RETVAL = self->p->cols;
+	OUTPUT:
+		RETVAL
+
+int
+rows( self )
+	Game::Einstein	self
+	CODE:
+		RETVAL = self->p->rows;
+	OUTPUT:
+		RETVAL
+
+void
+size( self )
+	Game::Einstein	self
+	INIT:
+		puzzle_t *p;
+	PPCODE:
+		p = self->p;
+		PUSHs( sv_2mortal( newSVuv( p->cols ) ) );
+		PUSHs( sv_2mortal( newSVuv( p->rows ) ) );
 
 SV *
 puzzle( self )
