@@ -112,5 +112,11 @@ typedef struct game_s {
 game_t *
 game_gen( cell_t cols, cell_t rows );
 
+void
+game_print( game_t *g );
+
+void
+game_free( game_t *g );
+
 /* vim: ts=4:sw=4:fdm=marker
  */
