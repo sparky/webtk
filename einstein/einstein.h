@@ -103,5 +103,14 @@ rule_print( rule_t *r );
 void
 try_rule_init( try_t *t, rule_t *r );
 
+typedef struct game_s {
+	puzzle_t *p;
+	rule_t *r;
+	try_t *t;
+} game_t;
+
+game_t *
+game_gen( cell_t cols, cell_t rows );
+
 /* vim: ts=4:sw=4:fdm=marker
  */

@@ -130,12 +130,6 @@ puzzle_rule_remove( puzzle_t *p, rule_t *rule_first )
 	} while ( rule_before->next );
 }
 
-typedef struct game_s {
-	puzzle_t *p;
-	rule_t *r;
-	try_t *t;
-} game_t;
-
 game_t *
 game_gen( cell_t cols, cell_t rows )
 {
