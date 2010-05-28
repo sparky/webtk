@@ -42,6 +42,30 @@ print(self)
 	CODE:
 		game_print( self );
 
+SV *
+puzzle( self )
+	Game::Einstein	self
+	INIT:
+		AV *	rows;
+		int row, col;
+		puzzle_t *p;
+	CODE:
+	{
+		p = self->p;
+		rows = (AV *)sv_2mortal( (SV *) newAV() );
+		for ( row = 0; row < p->rows; row++ ) {
+			AV *rowh = (AV *)sv_2mortal( (SV *) newAV() );
+			for ( col = 0; col < p->cols; col++ ) {
+				cell_t cell = CELL( p, row, col );
+				av_push( rowh, newSVnv( cell ) );
+			}
+			av_push( rows, newRV( (SV *) rowh ) );
+		}
+		RETVAL = newRV( (SV *) rows );
+	}
+	OUTPUT:
+		RETVAL
+
 void
 DESTROY(self)
 	Game::Einstein self
