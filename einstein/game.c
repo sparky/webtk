@@ -203,6 +203,7 @@ game_free( game_t *g )
 	} while ( ( r = rn ) != NULL );
 }
 
+#ifdef TEST
 int
 main( int argc, char *argv[] )
 {
@@ -227,6 +228,7 @@ main( int argc, char *argv[] )
 
 	return 0;
 }
+#endif
 
 /* vim: ts=4:sw=4:fdm=marker
  */
