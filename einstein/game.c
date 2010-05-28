@@ -171,7 +171,7 @@ puzzle_print( puzzle_t *p )
 		for ( col = 0; col < p->cols; col++ ) {
 			if ( col )
 				printf( " " );
-			printf( "%c", '1' + CELL(p, row, col ) );
+			printf( "%c", '0' + CELL(p, row, col ) );
 		}
 		printf( "\n" );
 	}

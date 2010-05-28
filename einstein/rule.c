@@ -30,9 +30,9 @@ rule_open_get( rule_t *r_ ) /* {{{ */
 	char * ret = malloc( strlen( DESC_OPEN ) );
 	assert( ret != NULL );
 	sprintf( ret, DESC_OPEN,
-			'1' + r->col,
+			'0' + r->col,
 			'A' + r->row,
-			'1' + r->el
+			'0' + r->el
 	);
 	return ret;
 } /* }}} */
@@ -78,9 +78,9 @@ rule_under_get( rule_t *r_ ) /* {{{ */
 	assert( ret != NULL );
 	sprintf( ret, DESC_UNDER,
 			'A' + r->row1,
-			'1' + r->el1,
+			'0' + r->el1,
 			'A' + r->row2,
-			'1' + r->el2
+			'0' + r->el2
 	);
 	return ret;
 } /* }}} */
@@ -152,11 +152,11 @@ rule_between_get( rule_t *r_ ) /* {{{ */
 	assert( ret != NULL );
 	sprintf( ret, DESC_BETWEEN,
 			'A' + r->row1,
-			'1' + r->el1,
+			'0' + r->el1,
 			'A' + r->rowC,
-			'1' + r->elC,
+			'0' + r->elC,
 			'A' + r->row2,
-			'1' + r->el2
+			'0' + r->el2
 	);
 	return ret;
 } /* }}} */
@@ -301,9 +301,9 @@ rule_near_get( rule_t *r_ ) /* {{{ */
 	assert( ret != NULL );
 	sprintf( ret, DESC_NEAR,
 			'A' + r->row1,
-			'1' + r->el1,
+			'0' + r->el1,
 			'A' + r->row2,
-			'1' + r->el2
+			'0' + r->el2
 	);
 	return ret;
 } /* }}} */
@@ -403,9 +403,9 @@ rule_dir_get( rule_t *r_ ) /* {{{ */
 	assert( ret != NULL );
 	sprintf( ret, DESC_DIR,
 			'A' + r->row1,
-			'1' + r->el1,
+			'0' + r->el1,
 			'A' + r->row2,
-			'1' + r->el2
+			'0' + r->el2
 	);
 	return ret;
 } /* }}} */
