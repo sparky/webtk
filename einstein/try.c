@@ -184,7 +184,7 @@ try_print( try_t *t )
 				printf( " " );
 			c = CELL( t, row, col );
 			for ( i = 0; i < t->cols; i++ ) {
-				printf( "%c", (c & (1 << i)) ? '0' + i : '_' );
+				printf( "%c", (c & (1 << i)) ? '0' + ( i & 7 ) : '_' );
 			}
 		}
 		printf( "\n" );
