@@ -22,20 +22,7 @@ typedef struct
 	cell_t col, row, el;
 } rule_open_t;
 
-#define	DESC_OPEN "open: %c %c%c"
-static char *
-rule_open_get( rule_t *r_ ) /* {{{ */
-{
-	rule_open_t *r = (rule_open_t *)r_;
-	char * ret = malloc( strlen( DESC_OPEN ) );
-	assert( ret != NULL );
-	sprintf( ret, DESC_OPEN,
-			'0' + r->col,
-			'A' + r->row,
-			'0' + r->el
-	);
-	return ret;
-} /* }}} */
+#define rule_open_get NULL
 
 /*static*/ int
 rule_open_apply( rule_t *r_, try_t *t ) /* {{{ */
@@ -69,7 +56,7 @@ typedef struct
 	cell_t row2, el2;
 } rule_under_t;
 
-#define	DESC_UNDER "under: %c%c %c%c"
+#define	DESC_UNDER "u %c%c %c%c"
 static char *
 rule_under_get( rule_t *r_ ) /* {{{ */
 {
@@ -143,7 +130,7 @@ typedef struct
 	unsigned char row2, el2;
 } rule_between_t;
 
-#define	DESC_BETWEEN "between: %c%c %c%c %c%c"
+#define	DESC_BETWEEN "b %c%c %c%c %c%c"
 static char *
 rule_between_get( rule_t *r_ ) /* {{{ */
 {
@@ -292,7 +279,7 @@ typedef struct
 	cell_t row2, el2;
 } rule_near_t;
 
-#define	DESC_NEAR "near: %c%c %c%c"
+#define	DESC_NEAR "n %c%c %c%c"
 static char *
 rule_near_get( rule_t *r_ ) /* {{{ */
 {
@@ -394,7 +381,7 @@ typedef struct
 	cell_t row2, el2;
 } rule_dir_t;
 
-#define	DESC_DIR "dir: %c%c %c%c"
+#define	DESC_DIR "d %c%c %c%c"
 static char *
 rule_dir_get( rule_t *r_ ) /* {{{ */
 {
