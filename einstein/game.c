@@ -166,6 +166,8 @@ puzzle_print( puzzle_t *p )
 {
 	cell_t row, col;
 	assert( p != NULL );
+
+	printf( "puzzle board:\n" );
 	for ( row = 0; row < p->rows; row++ ) {
 		printf( "%c:", 'A' + row );
 		for ( col = 0; col < p->cols; col++ ) {
@@ -180,7 +182,9 @@ game_print( game_t *g )
 {
 	assert( g != NULL );
 	puzzle_print( g->p );
+	putchar( '\n' );
 	rule_print( g->r );
+	putchar( '\n' );
 	try_print( g->t );
 }
 

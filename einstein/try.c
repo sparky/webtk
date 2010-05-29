@@ -174,9 +174,10 @@ void
 try_print( try_t *t )
 {
 	cell_t row, col, i;
+	try_cell_t c;
 	assert( t != NULL );
 
-	try_cell_t c;
+	printf( "try board:\n" );
 	for ( row = 0; row < t->rows; row++ ) {
 		printf( "%c:", 'A' + row );
 		for ( col = 0; col < t->cols; col++ ) {
