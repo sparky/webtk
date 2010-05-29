@@ -64,7 +64,7 @@ typedef struct
 	cell_t row2, el2;
 } rule_under_t;
 
-#define	DESC_UNDER "u %c%c %c%c"
+#define	DESC_UNDER "u %c%d %c%d"
 static char *
 rule_under_get( rule_t *r_ ) /* {{{ */
 {
@@ -72,10 +72,8 @@ rule_under_get( rule_t *r_ ) /* {{{ */
 	char * ret = malloc( strlen( DESC_UNDER ) );
 	assert( ret != NULL );
 	sprintf( ret, DESC_UNDER,
-			'A' + r->row1,
-			'0' + r->el1,
-			'A' + r->row2,
-			'0' + r->el2
+			'A' + r->row1, r->el1,
+			'A' + r->row2, r->el2
 	);
 	return ret;
 } /* }}} */
@@ -149,7 +147,7 @@ typedef struct
 	unsigned char row2, el2;
 } rule_between_t;
 
-#define	DESC_BETWEEN "b %c%c %c%c %c%c"
+#define	DESC_BETWEEN "b %c%d %c%d %c%d"
 static char *
 rule_between_get( rule_t *r_ ) /* {{{ */
 {
@@ -157,12 +155,9 @@ rule_between_get( rule_t *r_ ) /* {{{ */
 	char * ret = malloc( strlen( DESC_BETWEEN ) );
 	assert( ret != NULL );
 	sprintf( ret, DESC_BETWEEN,
-			'A' + r->row1,
-			'0' + r->el1,
-			'A' + r->rowC,
-			'0' + r->elC,
-			'A' + r->row2,
-			'0' + r->el2
+			'A' + r->row1, r->el1,
+			'A' + r->rowC, r->elC,
+			'A' + r->row2, r->el2
 	);
 	return ret;
 } /* }}} */
@@ -315,7 +310,7 @@ typedef struct
 	cell_t row2, el2;
 } rule_near_t;
 
-#define	DESC_NEAR "n %c%c %c%c"
+#define	DESC_NEAR "n %c%d %c%d"
 static char *
 rule_near_get( rule_t *r_ ) /* {{{ */
 {
@@ -323,10 +318,8 @@ rule_near_get( rule_t *r_ ) /* {{{ */
 	char * ret = malloc( strlen( DESC_NEAR ) );
 	assert( ret != NULL );
 	sprintf( ret, DESC_NEAR,
-			'A' + r->row1,
-			'0' + r->el1,
-			'A' + r->row2,
-			'0' + r->el2
+			'A' + r->row1, r->el1,
+			'A' + r->row2, r->el2
 	);
 	return ret;
 } /* }}} */
@@ -428,7 +421,7 @@ typedef struct
 	cell_t row2, el2;
 } rule_dir_t;
 
-#define	DESC_DIR "d %c%c %c%c"
+#define	DESC_DIR "d %c%d %c%d"
 static char *
 rule_dir_get( rule_t *r_ ) /* {{{ */
 {
@@ -436,10 +429,8 @@ rule_dir_get( rule_t *r_ ) /* {{{ */
 	char * ret = malloc( strlen( DESC_DIR ) );
 	assert( ret != NULL );
 	sprintf( ret, DESC_DIR,
-			'A' + r->row1,
-			'0' + r->el1,
-			'A' + r->row2,
-			'0' + r->el2
+			'A' + r->row1, r->el1,
+			'A' + r->row2, r->el2
 	);
 	return ret;
 } /* }}} */
