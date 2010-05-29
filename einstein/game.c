@@ -170,10 +170,10 @@ puzzle_print( puzzle_t *p )
 		printf( "%c: ", 'A' + row );
 		for ( col = 0; col < p->cols; col++ ) {
 			if ( col )
-				printf( " " );
+				putchar( ' ' );
 			printf( "%2d", CELL(p, row, col ) );
 		}
-		printf( "\n" );
+		putchar( '\n' );
 	}
 }
 
