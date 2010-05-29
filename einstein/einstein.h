@@ -44,15 +44,13 @@ try_is_possible( try_t *t, cell_t col, cell_t row, cell_t el )
 static inline int
 try_is_defined( try_t *t, cell_t col, cell_t row )
 {
-	int el;
-	int cnt = 0;
 	try_cell_t c = CELL( t, row, col );
-	for ( el = 0; el < t->cols; el++ )
-		if ( c & ( 1 << el ) )
-			if ( ++cnt > 1 )
-				return 0;
 
-	return cnt == 1;
+	/* must not be 0 */
+	assert( c );
+
+	/* true if only one bit is set */
+	return ( c & ( c - 1 ) ) == 0;
 }
 
 /* exclude some element from cell */
