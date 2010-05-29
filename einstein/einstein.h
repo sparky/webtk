@@ -93,9 +93,6 @@ struct rule_s
 rule_t *
 rule_new( puzzle_t *p );
 
-int
-rule_open_apply( rule_t *r_, try_t *t );
-
 void
 rule_print( rule_t *r );
 

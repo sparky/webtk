@@ -155,8 +155,8 @@ try_rule_init( try_t *t, rule_t *r )
 {
 	do {
 		r = r->next;
-		if ( r->apply == rule_open_apply )
-			rule_open_apply( r, t );
+		if ( r->get == NULL && r->apply != NULL )
+			r->apply( r, t );
 	} while ( r->next );
 }
 

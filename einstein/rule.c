@@ -24,7 +24,7 @@ typedef struct
 
 #define rule_open_get NULL
 
-/*static*/ int
+static int
 rule_open_apply( rule_t *r_, try_t *t ) /* {{{ */
 {
 	rule_open_t *r = (rule_open_t *)r_;
