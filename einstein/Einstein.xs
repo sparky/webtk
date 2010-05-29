@@ -21,8 +21,8 @@ new(class, cols=6, rows=6, seed=0)
 	{
 		unsigned int reseed = 0;
 
-		if ( cols < 4 || cols > 15 )
-			croak( "number of columns must be between 4 and 15" );
+		if ( cols < 4 || cols > 31 )
+			croak( "number of columns must be between 4 and 31" );
 		if ( rows < 2 )
 			croak( "number of rows must be at least 2" );
 
