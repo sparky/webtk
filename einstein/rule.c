@@ -529,7 +529,7 @@ rule_print( rule_t *r )
 		if ( ! r->get )
 			continue;
 		r->get( r, c );
-		printf( "R: %s\n", c );
+		printf( "- %s\n", c );
 	} while ( r->next );
 
 }

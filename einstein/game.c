@@ -167,11 +167,9 @@ puzzle_print( puzzle_t *p )
 	cell_t row, col;
 	assert( p != NULL );
 	for ( row = 0; row < p->rows; row++ ) {
-		printf( "%c: ", 'A' + row );
+		printf( "%c:", 'A' + row );
 		for ( col = 0; col < p->cols; col++ ) {
-			if ( col )
-				putchar( ' ' );
-			printf( "%2d", CELL(p, row, col ) );
+			printf( " %2d", CELL(p, row, col ) );
 		}
 		putchar( '\n' );
 	}
