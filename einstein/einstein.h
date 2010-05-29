@@ -83,7 +83,7 @@ typedef struct rule_s rule_t;
 
 #define RULE_STRUCT_BASE \
 	int (*apply)( rule_t *r, try_t *t ); \
-	char * (*get)( rule_t *r ); \
+	int (*get)( rule_t *r, char *buf ); \
 	int (*check)( rule_t *r, try_t *t ); \
 	rule_t *next;
 

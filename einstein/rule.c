@@ -65,17 +65,15 @@ typedef struct
 } rule_under_t;
 
 #define	DESC_UNDER "u %c%d %c%d"
-static char *
-rule_under_get( rule_t *r_ ) /* {{{ */
+static int
+rule_under_get( rule_t *r_, char *buf ) /* {{{ */
 {
 	rule_under_t *r = (rule_under_t *)r_;
-	char * ret = malloc( strlen( DESC_UNDER ) );
-	assert( ret != NULL );
-	sprintf( ret, DESC_UNDER,
+	assert( buf != NULL );
+	return sprintf( buf, DESC_UNDER,
 			'A' + r->row1, r->el1,
 			'A' + r->row2, r->el2
 	);
-	return ret;
 } /* }}} */
 
 static int
@@ -148,18 +146,16 @@ typedef struct
 } rule_between_t;
 
 #define	DESC_BETWEEN "b %c%d %c%d %c%d"
-static char *
-rule_between_get( rule_t *r_ ) /* {{{ */
+static int
+rule_between_get( rule_t *r_, char *buf ) /* {{{ */
 {
 	rule_between_t *r = (rule_between_t *)r_;
-	char * ret = malloc( strlen( DESC_BETWEEN ) );
-	assert( ret != NULL );
-	sprintf( ret, DESC_BETWEEN,
+	assert( buf != NULL );
+	return sprintf( buf, DESC_BETWEEN,
 			'A' + r->row1, r->el1,
 			'A' + r->rowC, r->elC,
 			'A' + r->row2, r->el2
 	);
-	return ret;
 } /* }}} */
 
 static int
@@ -311,17 +307,15 @@ typedef struct
 } rule_near_t;
 
 #define	DESC_NEAR "n %c%d %c%d"
-static char *
-rule_near_get( rule_t *r_ ) /* {{{ */
+static int
+rule_near_get( rule_t *r_, char *buf ) /* {{{ */
 {
 	rule_near_t *r = (rule_near_t *)r_;
-	char * ret = malloc( strlen( DESC_NEAR ) );
-	assert( ret != NULL );
-	sprintf( ret, DESC_NEAR,
+	assert( buf != NULL );
+	return sprintf( buf, DESC_NEAR,
 			'A' + r->row1, r->el1,
 			'A' + r->row2, r->el2
 	);
-	return ret;
 } /* }}} */
 
 static int
@@ -422,17 +416,15 @@ typedef struct
 } rule_dir_t;
 
 #define	DESC_DIR "d %c%d %c%d"
-static char *
-rule_dir_get( rule_t *r_ ) /* {{{ */
+static int
+rule_dir_get( rule_t *r_, char *buf ) /* {{{ */
 {
 	rule_dir_t *r = (rule_dir_t *)r_;
-	char * ret = malloc( strlen( DESC_DIR ) );
-	assert( ret != NULL );
-	sprintf( ret, DESC_DIR,
+	assert( buf != NULL );
+	return sprintf( buf, DESC_DIR,
 			'A' + r->row1, r->el1,
 			'A' + r->row2, r->el2
 	);
-	return ret;
 } /* }}} */
 
 static int
@@ -528,7 +520,7 @@ rule_new( puzzle_t *p ) /* {{{ */
 void
 rule_print( rule_t *r )
 {
-	char *c;
+	char c[16];
 	assert( r != NULL );
 
 	printf( "rules:\n" );
@@ -536,9 +528,8 @@ rule_print( rule_t *r )
 		r = r->next;
 		if ( ! r->get )
 			continue;
-		c = r->get( r );
+		r->get( r, c );
 		printf( "R: %s\n", c );
-		free( c );
 	} while ( r->next );
 
 }
