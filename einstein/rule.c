@@ -12,6 +12,7 @@
 	assert( r != NULL ); \
 	r->apply = rule_ ## rtype ## _apply; \
 	r->get = rule_ ## rtype ## _get; \
+	r->check = rule_ ## rtype ## _check; \
 	r->next = NULL;
 
 
@@ -23,6 +24,13 @@ typedef struct
 } rule_open_t;
 
 #define rule_open_get NULL
+
+static int
+rule_open_check( rule_t *r_, try_t *t ) /* {{{ */
+{
+	rule_open_t *r = (rule_open_t *)r_;
+	return try_find( t, r->row, r->el ) == r->col;
+} /* }}} */
 
 static int
 rule_open_apply( rule_t *r_, try_t *t ) /* {{{ */
@@ -70,6 +78,17 @@ rule_under_get( rule_t *r_ ) /* {{{ */
 			'0' + r->el2
 	);
 	return ret;
+} /* }}} */
+
+static int
+rule_under_check( rule_t *r_, try_t *t ) /* {{{ */
+{
+	rule_under_t *r = (rule_under_t *)r_;
+	int col1 = try_find( t, r->row1, r->el1 );
+	assert( col1 > 0 );
+	int col2 = try_find( t, r->row2, r->el2 );
+	assert( col2 > 0 );
+	return col1 == col2;
 } /* }}} */
 
 static int
@@ -146,6 +165,23 @@ rule_between_get( rule_t *r_ ) /* {{{ */
 			'0' + r->el2
 	);
 	return ret;
+} /* }}} */
+
+static int
+rule_between_check( rule_t *r_, try_t *t ) /* {{{ */
+{
+	rule_between_t *r = (rule_between_t *)r_;
+	int col1 = try_find( t, r->row1, r->el1 );
+	assert( col1 > 0 );
+	int colC = try_find( t, r->rowC, r->elC );
+	assert( colC > 0 );
+	int col2 = try_find( t, r->row2, r->el2 );
+	assert( col2 > 0 );
+	if ( col1 + 1 == colC )
+		return colC + 1 == col2;
+	else if ( col2 + 1 == colC )
+		return colC + 1 == col1;
+	return 0;
 } /* }}} */
 
 static int
@@ -296,6 +332,17 @@ rule_near_get( rule_t *r_ ) /* {{{ */
 } /* }}} */
 
 static int
+rule_near_check( rule_t *r_, try_t *t ) /* {{{ */
+{
+	rule_near_t *r = (rule_near_t *)r_;
+	int col1 = try_find( t, r->row1, r->el1 );
+	assert( col1 > 0 );
+	int col2 = try_find( t, r->row2, r->el2 );
+	assert( col2 > 0 );
+	return col1 + 1 == col2 || col2 + 1 == col1;
+} /* }}} */
+
+static int
 rule_near_apply_to_col( try_t *t, cell_t col,
 		cell_t near_row, cell_t near_num,
 		cell_t this_row, cell_t this_num ) /* {{{ */
@@ -395,6 +442,17 @@ rule_dir_get( rule_t *r_ ) /* {{{ */
 			'0' + r->el2
 	);
 	return ret;
+} /* }}} */
+
+static int
+rule_dir_check( rule_t *r_, try_t *t ) /* {{{ */
+{
+	rule_dir_t *r = (rule_dir_t *)r_;
+	int col1 = try_find( t, r->row1, r->el1 );
+	assert( col1 > 0 );
+	int col2 = try_find( t, r->row2, r->el2 );
+	assert( col2 > 0 );
+	return col1 < col2;
 } /* }}} */
 
 static int

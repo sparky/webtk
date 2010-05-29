@@ -90,7 +90,6 @@ try_check_singles( try_t *t, cell_t row )
 }
 
 /* find element */
-/*
 int
 try_find( try_t *t, cell_t row, cell_t el )
 {
@@ -101,7 +100,6 @@ try_find( try_t *t, cell_t row, cell_t el )
 			return col;
 	return -1;
 }
-*/
 
 int
 try_exclude( try_t *t, cell_t col, cell_t row, cell_t el )

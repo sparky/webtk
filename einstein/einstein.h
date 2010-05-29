@@ -71,6 +71,9 @@ try_new( puzzle_t *p );
 int
 try_is_solved( try_t *t );
 
+int
+try_find( try_t *t, cell_t row, cell_t el );
+
 void
 try_print( try_t *t );
 
@@ -81,6 +84,7 @@ typedef struct rule_s rule_t;
 #define RULE_STRUCT_BASE \
 	int (*apply)( rule_t *r, try_t *t ); \
 	char * (*get)( rule_t *r ); \
+	int (*check)( rule_t *r, try_t *t ); \
 	rule_t *next;
 
 struct rule_s
