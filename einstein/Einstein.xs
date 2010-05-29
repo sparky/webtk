@@ -153,7 +153,7 @@ rules( self )
 	INIT:
 		AV *	rule_list;
 		rule_t *r;
-		char * rule_text;
+		char rule_text[16];
 		STRLEN rule_size;
 	CODE:
 	{
@@ -162,10 +162,8 @@ rules( self )
 		do {
 			if ( ! r->get )
 				continue;
-			rule_text = r->get( r );
-			rule_size = strlen( rule_text );
+			rule_size = r->get( r, rule_text );
 			av_push( rule_list, newSVpv( rule_text, rule_size ) );
-			free( rule_text );
 		} while ( ( r = r->next ) != NULL );
 
 		RETVAL = newRV( (SV *) rule_list );
