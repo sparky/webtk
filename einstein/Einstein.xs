@@ -258,6 +258,17 @@ invalid_rules( self )
 			}
 		} while( ( r = r->next ) != NULL );
 
+int
+is_defined( cell )
+	UV	cell
+	CODE:
+	{
+		if ( cell == 0 )
+			croak( "cell is empty" );
+		RETVAL = ( cell & ( cell - 1 ) ) == 0;
+	}
+	OUTPUT:
+		RETVAL
 
 void
 DESTROY(self)
