@@ -244,6 +244,9 @@ invalid_rules( self )
 	PPCODE:
 		t = self->t;
 		r = self->r->next;
+		if ( ! try_is_solved( t ) )
+			croak( "puzzle must be solved to get invalid_rules" );
+
 		do {
 			if ( ! r->check )
 				continue;
