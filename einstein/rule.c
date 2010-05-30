@@ -81,9 +81,9 @@ rule_under_check( rule_t *r_, try_t *t ) /* {{{ */
 {
 	rule_under_t *r = (rule_under_t *)r_;
 	int col1 = try_find( t, r->row1, r->el1 );
-	assert( col1 > 0 );
+	assert( col1 >= 0 );
 	int col2 = try_find( t, r->row2, r->el2 );
-	assert( col2 > 0 );
+	assert( col2 >= 0 );
 	return col1 == col2;
 } /* }}} */
 
@@ -163,11 +163,11 @@ rule_between_check( rule_t *r_, try_t *t ) /* {{{ */
 {
 	rule_between_t *r = (rule_between_t *)r_;
 	int col1 = try_find( t, r->row1, r->el1 );
-	assert( col1 > 0 );
+	assert( col1 >= 0 );
 	int colC = try_find( t, r->rowC, r->elC );
-	assert( colC > 0 );
+	assert( colC >= 0 );
 	int col2 = try_find( t, r->row2, r->el2 );
-	assert( col2 > 0 );
+	assert( col2 >= 0 );
 	if ( col1 + 1 == colC )
 		return colC + 1 == col2;
 	else if ( col2 + 1 == colC )
@@ -323,9 +323,9 @@ rule_near_check( rule_t *r_, try_t *t ) /* {{{ */
 {
 	rule_near_t *r = (rule_near_t *)r_;
 	int col1 = try_find( t, r->row1, r->el1 );
-	assert( col1 > 0 );
+	assert( col1 >= 0 );
 	int col2 = try_find( t, r->row2, r->el2 );
-	assert( col2 > 0 );
+	assert( col2 >= 0 );
 	return col1 + 1 == col2 || col2 + 1 == col1;
 } /* }}} */
 
@@ -432,9 +432,9 @@ rule_dir_check( rule_t *r_, try_t *t ) /* {{{ */
 {
 	rule_dir_t *r = (rule_dir_t *)r_;
 	int col1 = try_find( t, r->row1, r->el1 );
-	assert( col1 > 0 );
+	assert( col1 >= 0 );
 	int col2 = try_find( t, r->row2, r->el2 );
-	assert( col2 > 0 );
+	assert( col2 >= 0 );
 	return col1 < col2;
 } /* }}} */
 
