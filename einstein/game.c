@@ -26,18 +26,24 @@ irand( unsigned int max ) /* {{{ */
 static void
 puzzle_shuffle( puzzle_t *p )
 {
-	size_t col, row, a, b, i;
-	cell_t tmp;
+	size_t row;
+
+	/* drop few random values to make sure puzzles with the same number of
+	 * columns and random seed won't look the same */
+	for ( row = 0; row < p->rows; row++ )
+		irand( p->cols );
+
 	for ( row = 0; row < p->rows; row++ ) {
+		size_t col, i;
 		for ( col = 0; col < p->cols; col++ )
 			CELL( p, row, col ) = (cell_t)col;
 
 		for ( i = 0; i < 5 * p->cols; i++ ) {
-			a = irand( p->cols );
-			b = irand( p->cols );
-			tmp = CELL( p, row, a );
-			CELL( p, row, a ) = CELL( p, row, b );
-			CELL( p, row, b ) = tmp;
+			size_t col_a = irand( p->cols );
+			size_t col_b = irand( p->cols );
+			cell_t tmp = CELL( p, row, col_a );
+			CELL( p, row, col_a ) = CELL( p, row, col_b );
+			CELL( p, row, col_b ) = tmp;
 		}
 	}
 }
