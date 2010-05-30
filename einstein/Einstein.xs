@@ -14,8 +14,8 @@ PROTOTYPES: ENABLE
 Game::Einstein
 new(class, cols=6, rows=6, seed=0)
 	SV *	class
-	int	cols
-	int	rows
+	IV	cols
+	IV	rows
 	unsigned int	seed
 	CODE:
 	{
@@ -44,7 +44,7 @@ print(self)
 	CODE:
 		game_print( self );
 
-int
+UV
 cols( self )
 	Game::Einstein	self
 	ALIAS:
@@ -54,7 +54,7 @@ cols( self )
 	OUTPUT:
 		RETVAL
 
-int
+UV
 rows( self )
 	Game::Einstein	self
 	CODE:
@@ -77,7 +77,7 @@ puzzle( self )
 	Game::Einstein	self
 	INIT:
 		AV *	rows;
-		int row, col;
+		size_t	row, col;
 		puzzle_t *p;
 	CODE:
 	{
@@ -102,7 +102,7 @@ try( self )
 	Game::Einstein	self
 	INIT:
 		AV *	rows;
-		int row, col;
+		size_t	row, col;
 		try_t *t;
 	CODE:
 	{
@@ -125,10 +125,10 @@ try( self )
 SV *
 try_get_row( self, row )
 	Game::Einstein	self
-	int row
+	IV	row
 	INIT:
 		AV *	rowh;
-		int col;
+		size_t	col;
 		try_t *t;
 	CODE:
 	{
@@ -171,12 +171,12 @@ rules( self )
 	OUTPUT:
 		RETVAL
 
-int
+bool
 set( self, col, row, el )
 	Game::Einstein	self
-	int	col
-	int	row
-	int	el
+	IV	col
+	IV	row
+	IV	el
 	INIT:
 		try_t *t;
 	CODE:
@@ -194,12 +194,12 @@ set( self, col, row, el )
 		RETVAL
 
 
-int
+bool
 exclude( self, col, row, el )
 	Game::Einstein	self
-	int	col
-	int	row
-	int	el
+	IV	col
+	IV	row
+	IV	el
 	INIT:
 		try_t *t;
 	CODE:
@@ -217,7 +217,7 @@ exclude( self, col, row, el )
 		RETVAL
 
 
-int
+bool
 is_solved( self )
 	Game::Einstein	self
 	CODE:
@@ -225,7 +225,7 @@ is_solved( self )
 	OUTPUT:
 		RETVAL
 
-int
+bool
 is_correct( self )
 	Game::Einstein	self
 	CODE:
@@ -258,7 +258,7 @@ invalid_rules( self )
 			}
 		} while( ( r = r->next ) != NULL );
 
-int
+bool
 is_defined( cell )
 	UV	cell
 	CODE:
