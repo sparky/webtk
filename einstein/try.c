@@ -1,18 +1,21 @@
-
+/*
+ *
+ */
+#include "einstein.h"
 #include <stdio.h>
 #include <malloc.h>
-#include <stdlib.h>
-#include <string.h>
 #include <assert.h>
-#include "einstein.h"
 
-void
+static void
 try_reset( try_t *t )
 {
-	int i;
-	int max = t->cols * t->rows;
+	size_t i;
+	size_t max = t->cols * t->rows;
+
+	assert( t->cols <= sizeof( try_cell_t ) * 8 );
+
 	/* mark with bit 1 all possible numbers */
-	try_cell_t mask = ( 1 << t->cols ) - 1;
+	try_cell_t mask = TRY_MASK( t->cols ) - 1;
 
 	for ( i = 0; i < max; i++ )
 		t->board[ i ] = mask;
@@ -20,13 +23,14 @@ try_reset( try_t *t )
 	return;
 }
 
-void
-try_check_singles( try_t *t, cell_t row )
+static void
+try_check_singles( try_t *t, size_t row )
 {
-	int changed = 0;
-	int * cells_count, * els_count, * els, * el_cells;
-	size_t size = sizeof( int ) * t->cols * 4;
-	cell_t col, el;
+	bool changed = false;
+	long int * cells_count, * els_count, * els, * el_cells;
+	size_t size = sizeof( long int ) * t->cols * 4;
+	size_t col;
+	cell_t el;
 
 	/* alloc all at once for speed */
 	cells_count = malloc( size );
@@ -43,7 +47,7 @@ try_check_singles( try_t *t, cell_t row )
 		try_cell_t elements = CELL( t, row, col );
 		cell_t el;
 		for ( el = 0; el < t->cols; el++ )
-			if ( elements & ( 1 << el ) ) {
+			if ( elements & TRY_MASK( el ) ) {
 				/* count elements of this value */
 				els_count[ el ]++;
 				/* in what cell this element can be found */
@@ -51,7 +55,7 @@ try_check_singles( try_t *t, cell_t row )
 				/* how many elements does this cell have */
 				cells_count[ col ]++;
 				/* value of last element found */
-				els[ col ] = el;
+				els[ col ] = (long int)el;
 			}
 	}
 
@@ -60,8 +64,8 @@ try_check_singles( try_t *t, cell_t row )
 		/* if there is only one element in this cell */
 		/* and the element can be found somewhere else */
 		if ( (cells_count[ col ] == 1) && ( els_count[ els[ col ] ] != 1 ) ) {
-			int i;
-			try_cell_t mask = 1 << els[ col ];
+			long int i;
+			try_cell_t mask = TRY_MASK( els[ col ] );
 			/* remove this element from all cells */
 			for ( i = 0; i < t->cols; i++ )
 				CELL( t, row, i ) &= ~mask;
@@ -76,8 +80,8 @@ try_check_singles( try_t *t, cell_t row )
 		/* if some element appears only once */
 		/* and there are other elements in that cell */
 		if ( (els_count[ el ] == 1) && ( cells_count[ el_cells[ el ] ] != 1 ) ) {
-			try_cell_t mask = 1 << el;
-			cell_t col = el_cells[ el ];
+			try_cell_t mask = TRY_MASK( el );
+			size_t col = el_cells[ el ];
 			CELL( t, row, col ) = mask;
 
 			changed = 1;
@@ -91,38 +95,38 @@ try_check_singles( try_t *t, cell_t row )
 
 /* find element */
 int
-try_find( try_t *t, cell_t row, cell_t el )
+try_find( const try_t *t, size_t row, cell_t el )
 {
-	cell_t col;
-	try_cell_t mask = 1 << el;
+	size_t col;
+	try_cell_t mask = TRY_MASK( el );
 	for ( col = 0; col < t->cols; col++ )
 		if ( CELL( t, row, col ) == mask )
 			return col;
 	return -1;
 }
 
-int
-try_exclude( try_t *t, cell_t col, cell_t row, cell_t el )
+bool
+try_exclude( try_t *t, size_t col, size_t row, cell_t el )
 {
-	try_cell_t mask = 1 << el;
+	try_cell_t mask = TRY_MASK( el );
 	if ( ! (CELL( t, row, col ) & mask ) )
-		return 0;
+		return false;
 
 	CELL( t, row, col ) &= ~mask;
 
 	try_check_singles( t, row );
 
-	return 1;
+	return true;
 }
 
-int
-try_set( try_t *t, cell_t col, cell_t row, cell_t el )
+bool
+try_set( try_t *t, size_t col, size_t row, cell_t el )
 {
-	int i;
-	try_cell_t mask = 1 << el;
+	size_t i;
+	try_cell_t mask = TRY_MASK( el );
 
 	if ( ! (CELL( t, row, col ) & mask ) )
-		return 0;
+		return false;
 
 	for ( i = 0; i < t->cols; i++ )
 		CELL( t, row, i ) &= ~mask;
@@ -131,11 +135,11 @@ try_set( try_t *t, cell_t col, cell_t row, cell_t el )
 
 	try_check_singles( t, row );
 
-	return 1;
+	return true;
 }
 
 try_t *
-try_new( puzzle_t *p )
+try_new( const puzzle_t *p )
 {
 	try_t *t;
 	assert( p != NULL );
@@ -149,7 +153,7 @@ try_new( puzzle_t *p )
 }
 
 void
-try_rule_init( try_t *t, rule_t *r )
+try_rule_init( try_t *t, const rule_t *r )
 {
 	do {
 		r = r->next;
@@ -158,33 +162,33 @@ try_rule_init( try_t *t, rule_t *r )
 	} while ( r->next );
 }
 
-int
-try_is_solved( try_t *t )
+bool
+try_is_solved( const try_t *t )
 {
-	int col, row;
+	size_t col, row;
 	for ( row = 0; row < t->rows; row++ )
 		for ( col = 0; col < t->cols; col++ )
 			if ( ! try_is_defined( t, col, row ) )
-				return 0;
-	return 1;
+				return false;
+	return true;
 }
 
 
 void
-try_print( try_t *t )
+try_print( const try_t *t )
 {
-	cell_t row, col, i;
+	size_t row, col, i;
 	try_cell_t c;
 	assert( t != NULL );
 
 	printf( "try board:\n" );
 	for ( row = 0; row < t->rows; row++ ) {
-		printf( "%c:", 'A' + row );
+		printf( "%c:", 'A' + (int)row );
 		for ( col = 0; col < t->cols; col++ ) {
 			putchar( ' ' );
 			c = CELL( t, row, col );
 			for ( i = 0; i < t->cols; i++ ) {
-				putchar( (c & (1 << i)) ? '0' + ( i & 7 ) : '_' );
+				putchar( ( c & TRY_MASK( i ) ) ? '0' + ( i & 7 ) : '_' );
 			}
 		}
 		putchar( '\n' );
