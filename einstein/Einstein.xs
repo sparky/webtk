@@ -217,8 +217,49 @@ exclude( self, col, row, el )
 		RETVAL
 
 
+int
+is_solved( self )
+	Game::Einstein	self
+	CODE:
+		RETVAL = try_is_solved( self->t );
+	OUTPUT:
+		RETVAL
+
+int
+is_correct( self )
+	Game::Einstein	self
+	CODE:
+		RETVAL = puzzle_try_is_valid( self->p, self->t );
+	OUTPUT:
+		RETVAL
+
+void
+invalid_rules( self )
+	Game::Einstein	self
+	INIT:
+		try_t *t;
+		rule_t *r;
+		char rule_text[16];
+		STRLEN rule_size;
+	PPCODE:
+		t = self->t;
+		r = self->r->next;
+		do {
+			if ( ! r->check )
+				continue;
+			if ( ! r->get )
+				continue;
+			if ( ! r->check( r, t ) ) {
+				rule_size = r->get( r, rule_text );
+				PUSHs( sv_2mortal( newSVpv( rule_text, rule_size ) ) );
+			}
+		} while( ( r = r->next ) != NULL );
+
+
 void
 DESTROY(self)
 	Game::Einstein self
 	CODE:
 		game_free( self );
+
+# vim: ts=4:sw=4

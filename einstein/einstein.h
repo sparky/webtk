@@ -117,5 +117,8 @@ game_print( game_t *g );
 void
 game_free( game_t *g );
 
+int
+puzzle_try_is_valid( puzzle_t *p, try_t *t );
+
 /* vim: ts=4:sw=4:fdm=marker
  */
