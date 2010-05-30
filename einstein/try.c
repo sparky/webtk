@@ -4,6 +4,7 @@
 #include "einstein.h"
 #include <stdio.h>
 #include <malloc.h>
+#include <string.h>
 #include <assert.h>
 
 static void
