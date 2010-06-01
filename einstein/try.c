@@ -27,71 +27,87 @@ try_reset( try_t *t )
 static void
 try_check_singles( try_t *t, size_t row )
 {
-	bool changed = false;
-	long int * cells_count, * els_count, * els, * el_cells;
-	size_t size = sizeof( long int ) * t->cols * 4;
-	size_t col;
-	cell_t el;
+	typedef unsigned char fastint_t;
+	const size_t size = sizeof( fastint_t ) * t->cols * 4;
 
 	/* alloc all at once for speed */
-	cells_count = malloc( size );
-	assert( cells_count != NULL );
-	memset( cells_count, 0, size );
+	fastint_t * const workspace = malloc( size );
+	assert( workspace != NULL );
 
-	cells_count	= &cells_count[ t->cols * 0 ];
-	els_count	= &cells_count[ t->cols * 1 ];
-	els			= &cells_count[ t->cols * 2 ];
-	el_cells	= &cells_count[ t->cols * 3 ];
+	fastint_t * const elements_count	= &workspace[ t->cols * 0 ];
+	fastint_t * const element2cell		= &workspace[ t->cols * 1 ];
+	fastint_t * const cell2element		= &workspace[ t->cols * 2 ];
+	fastint_t * const elements_in_cell	= &workspace[ t->cols * 3 ];
 
-	/* foreach cell */
-	for ( col = 0; col < t->cols; col++ ) {
-		try_cell_t elements = CELL( t, row, col );
-		cell_t el;
-		for ( el = 0; el < t->cols; el++ )
-			if ( elements & TRY_MASK( el ) ) {
-				/* count elements of this value */
-				els_count[ el ]++;
-				/* in what cell this element can be found */
-				el_cells[ el ] = col;
-				/* how many elements does this cell have */
-				cells_count[ col ]++;
-				/* value of last element found */
-				els[ col ] = (long int)el;
-			}
+	bool changed;
+redo:
+	changed = false;
+	memset( workspace, 0, size );
+
+	/* foreach element in each cell */
+	{
+		size_t col;
+		for ( col = 0; col < t->cols; col++ ) {
+			try_cell_t elements = CELL( t, row, col );
+			cell_t el = 0, last_el = 0;
+			fastint_t cnt = 0;
+			do {
+				if ( elements & 1 ) {
+					/* count elements of this value */
+					elements_count[ el ]++;
+					/* in what cell this element can be found */
+					element2cell[ el ] = col;
+					/* how many elements does this cell have */
+					cnt++;
+					/* value of last element found */
+					last_el = el;
+				}
+				elements >>= 1;
+				el++;
+			} while ( elements );
+			cell2element[ col ] = last_el;
+			elements_in_cell[ col ] = cnt;
+		}
 	}
 
 	/* foreach cell */
-	for ( col = 0; col < t->cols; col++ )
-		/* if there is only one element in this cell */
-		/* and the element can be found somewhere else */
-		if ( (cells_count[ col ] == 1) && ( els_count[ els[ col ] ] != 1 ) ) {
-			long int i;
-			try_cell_t mask = TRY_MASK( els[ col ] );
+	{
+		size_t col;
+		for ( col = 0; col < t->cols; col++ )
+			/* if there is only one element in this cell */
+			/* and the element can be found somewhere else */
+			if ( (elements_in_cell[ col ] == 1) && ( elements_count[ cell2element[ col ] ] != 1 ) ) {
+				long int i;
+				try_cell_t mask = TRY_MASK( cell2element[ col ] );
 			/* remove this element from all cells */
-			for ( i = 0; i < t->cols; i++ )
-				CELL( t, row, i ) &= ~mask;
+				for ( i = 0; i < t->cols; i++ )
+					CELL( t, row, i ) &= ~mask;
+	
+				CELL( t, row, col ) = mask;
 
-			CELL( t, row, col ) = mask;
-
-			changed = 1;
-		}
+				changed = 1;
+			}
+	}
 
 	/* foreach element */
-	for ( el = 0; el < t->cols; el++ )
-		/* if some element appears only once */
-		/* and there are other elements in that cell */
-		if ( (els_count[ el ] == 1) && ( cells_count[ el_cells[ el ] ] != 1 ) ) {
-			try_cell_t mask = TRY_MASK( el );
-			size_t col = el_cells[ el ];
-			CELL( t, row, col ) = mask;
+	{
+		cell_t el = 0;
+		for ( el = 0; el < t->cols; el++ )
+			/* if some element appears only once */
+			/* and there are other elements in that cell */
+			if ( (elements_count[ el ] == 1) && ( elements_in_cell[ element2cell[ el ] ] != 1 ) ) {
+				try_cell_t mask = TRY_MASK( el );
+				size_t col = element2cell[ el ];
+				CELL( t, row, col ) = mask;
 
-			changed = 1;
-		}
-
-	free( cells_count );
+				changed = 1;
+			}
+	}
 
 	if ( changed )
-		try_check_singles( t, row );
+		goto redo;
+
+	free( workspace );
 }
 
 /* find element */
