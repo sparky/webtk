@@ -17,9 +17,17 @@ sub cell
 
 	$td->addChild( $td->ownerDocument->createTextNode( "$col, $row" ) );
 	$td->button( \&cell_click, $col, $row );
+	$td->rbutton( \&cell_click, $col, $row );
+	$td->dynamic();
 }
 
-my $webtk = WebTK::init;
-$webtk->autotable( 6, 6, \&cell );
+sub test
+{
+	my $webtk = WebTK::init;
+	$webtk->autotable( 6, 6, \&cell );
 
-print $webtk->ownerDocument->serialize( 1 );
+	print $webtk->ownerDocument->serialize( 1 );
+}
+
+
+test();
