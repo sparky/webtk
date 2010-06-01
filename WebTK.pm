@@ -3,7 +3,7 @@ package WebTK;
 use warnings;
 use strict;
 use XML::LibXML ();
-use List::Util;
+use List::Util qw(first);
 
 my %by_id;
 
@@ -104,7 +104,7 @@ sub _addClass
 	my @class = split /\s+/, $class;
 
 	return
-		if @class and first { $_ eq $tkclass } @class;
+		if first { $_ eq $tkclass } @class;
 
 	push @class, $tkclass;
 
@@ -130,23 +130,45 @@ sub button
 	my $tkclass = shift;
 	my $el = shift;
 
-	_addClass( $el, $tkclass );
 	my $id = _id( $el );
+	_addClass( $el, $tkclass );
 
-	# TODO
+	my $obj = $by_id{ $id } ||= {};
+	$obj->{node} = $el;
+	$obj->{$tkclass} = \@_;
+}
+
+sub dynamic
+{
+	my $el = shift;
+
+	my $id = _id( $el );
+	_addClass( $el, "tk_dynamic" );
+
+	my $obj = $by_id{ $id } ||= {};
+	$obj->{node} = $el;
 }
 
 package XML::LibXML::Element;
+
+# object is clickable
 sub button
 {
 	unshift @_, "tk_click";
 	goto &WebTK::button;
 }
 
+# right-click
 sub rbutton
 {
 	unshift @_, "tk_rclick";
 	goto &WebTK::button;
+}
+
+# can be replaced with some other object
+sub dynamic
+{
+	goto &WebTK::dynamic
 }
 
 sub autotable
