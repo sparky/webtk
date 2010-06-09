@@ -20,11 +20,10 @@ sub init
 	my $node = XML::LibXML::Comment->new( " WebTK 0.1 " );
 	$doc->addChild( $node );
 
-	my $root = $doc->createElement( "html" );
+	my $root = $doc->createElementNS( "http://www.w3.org/1999/xhtml", "html" );
 	$doc->setDocumentElement( $root );
 
-	$root->setAttribute( "xmlns" => "http://www.w3.org/1999/xhtml" );
-	$root->setAttribute( "xml:lang" => "en" );
+	$root->setAttributeNS( "http://www.w3.org/XML/1998/namespace", "lang" => "en" );
 
 	my $head = $doc->createElement( "head" );
 	$root->addChild( $head );
@@ -39,7 +38,7 @@ sub init
 		my $link = $doc->createElement( "link" );
 		$link->setAttribute( rel => "stylesheet" );
 		$link->setAttribute( type => "text/css" );
-		$link->setAttribute( href => "/_webtk/screen.css" );
+		$link->setAttribute( href => "_webtk/screen.css" );
 		$link->setAttribute( media => "screen" );
 		$head->addChild( $link );
 	}
@@ -47,14 +46,14 @@ sub init
 	{
 		my $link = $doc->createElement( "link" );
 		$link->setAttribute( rel => "shortcut icon" );
-		$link->setAttribute( href => "/_webtk/favicon.png" );
+		$link->setAttribute( href => "_webtk/favicon.png" );
 		$head->addChild( $link );
 	}
 
 	{
 		my $script = $doc->createElement( "script" );
 		$script->setAttribute( type => "text/javascript" );
-		$script->setAttribute( src => "/_webtk/interface.js" );
+		$script->setAttribute( src => "_webtk/interface.js" );
 		$head->addChild( $script );
 	}
 
@@ -179,6 +178,11 @@ sub autotable
 	$self->addChild( $table );
 }
 
+sub id
+{
+	return (shift)->getAttribute( "id" );
+}
+
 1;
 
-#print "validate: \n" . $doc->validate();
+# vim: ts=4:sw=4
