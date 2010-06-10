@@ -3,6 +3,7 @@ package WebTK;
 use warnings;
 use strict;
 use XML::LibXML ();
+use Scalar::Util qw(weaken);
 use List::Util qw(first);
 
 my %by_id;
@@ -60,6 +61,7 @@ sub init
 
 	my $body = $doc->createElement( "body" );
 	$root->addChild( $body );
+	$body->dynamic();
 
 	return $body;
 }
@@ -133,7 +135,7 @@ sub button
 	_addClass( $el, $tkclass );
 
 	my $obj = $by_id{ $id } ||= {};
-	$obj->{node} = $el;
+	weaken( $obj->{node} = $el );
 	$obj->{$tkclass} = \@_;
 }
 
@@ -142,10 +144,33 @@ sub dynamic
 	my $el = shift;
 
 	my $id = _id( $el );
-	_addClass( $el, "tk_dynamic" );
+	#_addClass( $el, "tk_dynamic" );
 
 	my $obj = $by_id{ $id } ||= {};
-	$obj->{node} = $el;
+	weaken( $obj->{node} = $el );
+}
+
+sub _fixStyle
+{
+	my $hash = shift;
+	return join " ", map { $_ . ":" . $hash->{$_} .
+		($hash->{$_} =~ m/^-?\d+$/ and $hash->{$_} != 0 ? "px" : "") . ";" } keys %$hash;
+}
+
+sub _autoChild
+{
+	my $tag = shift;
+	my $node = shift;
+	my $doc = $node->ownerDocument;
+	my $child = $doc->createElement( $tag );
+	$node->addChild( $child );
+	while ( my ( $key, $value ) = splice @_, 0, 2 ) {
+		if ( $key eq "style" and ref $value eq "HASH" ) {
+			$value = _fixStyle( $value );
+		}
+		$child->setAttribute( $key, $value );
+	}
+	return $child;
 }
 
 package XML::LibXML::Element;
@@ -181,6 +206,29 @@ sub autotable
 sub id
 {
 	return (shift)->getAttribute( "id" );
+}
+
+*addClass = \&WebTK::_addClass;
+
+foreach my $tag ( qw(
+	a img
+	table tbody thead tfoot tr td th caption colgroup col
+	ul ol li dl dt dd
+	div span p pre
+	form fieldset legend input textarea
+	h1 h2 h3 h4 h5 h6
+	address strong em tt ins del sub sup hr small big
+	) )
+{
+	eval "sub $tag { unshift \@_, '$tag'; goto &WebTK::_autoChild; }";
+}
+
+sub text
+{
+	my $node = shift;
+	my $text = $node->ownerDocument->createTextNode( shift );
+	$node->addChild( $text );
+	return $text;
 }
 
 1;
