@@ -15,10 +15,17 @@ sub cell
 	my $col = shift;
 	my $row = shift;
 
-	$td->addChild( $td->ownerDocument->createTextNode( "$col, $row" ) );
+	$td->text( "$col, $row" );
+	my $a = $td->a( href => "#", style => {
+			left => 10,
+			top => 0,
+			width => 12,
+			height => 12,
+			border => 1,
+		} );
+	$a->text( "link" );
 	$td->button( \&cell_click, $col, $row );
 	$td->rbutton( \&cell_click, $col, $row );
-	$td->dynamic();
 }
 
 sub test
