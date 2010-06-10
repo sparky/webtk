@@ -1,3 +1,9 @@
+# This file is part of WebTK.
+#
+# 2010 (c) Przemysław Iskra <sparky@pld-linux.org>
+#	This program is free software,
+# you may distribute it under GPL v2 or newer.
+
 package WebTK;
 
 use warnings;
@@ -187,4 +193,4 @@ sub text
 
 1;
 
-# vim: ts=4:sw=4
+# vim: ts=4:sw=4:fdm=marker

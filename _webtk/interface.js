@@ -1,5 +1,12 @@
+/*
+ * This file is part of WebTK.
+ *
+ * 2010 (c) Przemysław Iskra <sparky@pld-linux.org>
+ *	This program is free software,
+ * you may distribute it under GPL v2 or newer.
+ */
 
-/* missing extensions */
+/* missing extensions {{{ */
 if (Array.prototype.indexOf)
 {
 	Array.prototype.exists = function( x )
@@ -35,8 +42,9 @@ if (Array.prototype.indexOf)
 		return -1;
 	};
 }
+/* }}} */
 
-/* own extensions */
+/* own extensions {{{ */
 HTMLElement.prototype.addClass = function ( acl )
 {
 	var cls = this.getAttribute( 'class' );
@@ -48,6 +56,7 @@ HTMLElement.prototype.addClass = function ( acl )
 
 	return this.setAttribute( 'class', cls + " " + acl );
 };
+/* }}} */
 
 /* */
 function error( msg )
@@ -107,6 +116,7 @@ window.addEventListener( 'load', start, false );
 
 var ajax = {
 	_req: new XMLHttpRequest(),
+	_senddata: [],
 	_recv: function ()
 	{
 		if ( ajax._req.readyState != 4 )
@@ -164,23 +174,26 @@ var ajax = {
 	{
 
 	},
-	send: function ( id, value )
-	{
-
-	},
 };
 
 window.setInterval( ajax.tick, 100 );
 
+var remoteEvent = {
+	_data: [],
+	send: function ( id, value )
+	{
+		event._data.push( id + '=' + value );
+	},
+};
 
-/* tk_click */
 
+/* tk_click {{{ :*/
 function callback_tk_click( e )
 {
 	e.preventDefault();
 	e.stopPropagation();
 
-	ajax.send( this.getAttribute( 'id' ), 'tk_click' );
+	remoteEvent.send( this.getAttribute( 'id' ), 'tk_click' );
 	this.addClass( "tk_click_active" );
 }
 
@@ -189,16 +202,16 @@ function register_tk_click( node )
 	node.addEventListener( "click", callback_tk_click, false );
 }
 register_tk_class( "tk_click", register_tk_click );
+/* }}} */
 
 
-/* tl_rclick */
-
+/* tl_rclick {{{ */
 function callback_tk_rclick( e )
 {
 	e.preventDefault();
 	e.stopPropagation();
 
-	ajax.send( this.getAttribute( 'id' ), 'tk_rclick' );
+	remoteEvent.send( this.getAttribute( 'id' ), 'tk_rclick' );
 	this.addClass( "tk_rclick_active" );
 }
 
@@ -207,6 +220,7 @@ function register_tk_rclick( node )
 	node.addEventListener( "contextmenu", callback_tk_rclick, false );
 }
 register_tk_class( "tk_rclick", register_tk_rclick );
+/* }}} */
 
-/* vim: ts=4:sw=4
+/* vim: ts=4:sw=4:fdm=marker
  */
