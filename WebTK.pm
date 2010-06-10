@@ -51,31 +51,6 @@ sub init
 }
 
 
-sub autotable
-{
-	my $doc = shift;
-	my $cols = shift;
-	my $rows = shift;
-	my $callback = shift;
-
-	my $table = $doc->createElement( "table" );
-	my $tbody = $doc->createElement( "tbody" );
-	$table->addChild( $tbody );
-
-	for ( my $row = 0; $row < $rows; $row++ ) {
-		my $tr = $doc->createElement( "tr" );
-		$tbody->addChild( $tr );
-		for ( my $col = 0; $col < $cols; $col++ ) {
-			my $td = $doc->createElement( "td" );
-			$tr->addChild( $td );
-			&$callback( $td, $col, $row, @_ );
-		}
-	}
-	
-	return $table;
-}
-
-
 sub _addClass
 {
 	my $el = shift;
@@ -185,14 +160,6 @@ sub rbutton
 sub dynamic
 {
 	goto &WebTK::dynamic
-}
-
-sub autoTable
-{
-	my $self = $_[0];
-	$_[0] = $self->ownerDocument;
-	my $table = &WebTK::autotable;
-	$self->addChild( $table );
 }
 
 *autoChild = \&WebTK::_autoChild;
