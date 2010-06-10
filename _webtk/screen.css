@@ -1,23 +1,24 @@
 
+.tk_rclick {
+	cursor: pointer;
+}
+.tk_rclick:hover {
+	outline: 1px solid #dd2;
+}
+.tk_rclick_active, .tk_rclick_active:hover {
+	outline: 1px solid #dd2;
+	opacity: 0.5;
+}
 
 .tk_click {
 	cursor: pointer;
 }
 .tk_click:hover {
-	outline: 1px solid #622;
+	outline: 1px solid #f22;
 }
-.tk_click_active {
-	outline: 1px solid #622;
+.tk_click_active, .tk_click_active:hover {
+	outline: 1px solid #f22;
 	opacity: 0.5;
 }
 
-.tk_rclick {
-	cursor: pointer;
-}
-.tk_rclick:hover {
-	outline: 1px solid #662;
-}
-.tk_rclick_active {
-	outline: 1px solid #662;
-	opacity: 0.5;
-}
+
