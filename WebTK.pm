@@ -26,41 +26,25 @@ sub init
 
 	$root->setAttributeNS( "http://www.w3.org/XML/1998/namespace", "lang" => "en" );
 
-	my $head = $doc->createElement( "head" );
-	$root->addChild( $head );
+	my $head = $root->autoChild( 'head' );
+	$head->autoChild( 'title' )->text( 'WebTK' );
+	$head->autoChild( 'link',
+		rel => "stylesheet",
+		type => "text/css",
+		href => "_webtk/screen.css",
+		media => "screen" );
+	$head->autoChild( 'link',
+		rel => "shortcut icon",
+		href => "_webtk/favicon.png" );
+	$head->autoChild( 'script',
+		type => "text/javascript",
+		src => "_webtk/interface.js" );
+	$head->autoChild( 'script',
+		type => "text/javascript" )->text(
+			"function init() { return { session: 1 }; }"
+		);
 
-	{
-		my $title = $doc->createElement( "title" );
-		$title->addChild( $doc->createTextNode( "WebTK" ) );
-		$head->addChild( $title );
-	}
-
-	{
-		my $link = $doc->createElement( "link" );
-		$link->setAttribute( rel => "stylesheet" );
-		$link->setAttribute( type => "text/css" );
-		$link->setAttribute( href => "_webtk/screen.css" );
-		$link->setAttribute( media => "screen" );
-		$head->addChild( $link );
-	}
-
-	{
-		my $link = $doc->createElement( "link" );
-		$link->setAttribute( rel => "shortcut icon" );
-		$link->setAttribute( href => "_webtk/favicon.png" );
-		$head->addChild( $link );
-	}
-
-	{
-		my $script = $doc->createElement( "script" );
-		$script->setAttribute( type => "text/javascript" );
-		$script->setAttribute( src => "_webtk/interface.js" );
-		$head->addChild( $script );
-	}
-
-
-	my $body = $doc->createElement( "body" );
-	$root->addChild( $body );
+	my $body = $root->autoChild( 'body' );
 	$body->dynamic();
 
 	return $body;
@@ -159,8 +143,8 @@ sub _fixStyle
 
 sub _autoChild
 {
-	my $tag = shift;
 	my $node = shift;
+	my $tag = shift;
 	my $doc = $node->ownerDocument;
 	my $child = $doc->createElement( $tag );
 	$node->addChild( $child );
@@ -174,6 +158,14 @@ sub _autoChild
 }
 
 package XML::LibXML::Element;
+
+sub id
+{
+	return (shift)->getAttribute( "id" );
+}
+
+*addClass = \&WebTK::_addClass;
+
 
 # object is clickable
 sub button
@@ -195,7 +187,7 @@ sub dynamic
 	goto &WebTK::dynamic
 }
 
-sub autotable
+sub autoTable
 {
 	my $self = $_[0];
 	$_[0] = $self->ownerDocument;
@@ -203,12 +195,7 @@ sub autotable
 	$self->addChild( $table );
 }
 
-sub id
-{
-	return (shift)->getAttribute( "id" );
-}
-
-*addClass = \&WebTK::_addClass;
+*autoChild = \&WebTK::_autoChild;
 
 foreach my $tag ( qw(
 	a img
@@ -220,7 +207,7 @@ foreach my $tag ( qw(
 	address strong em tt ins del sub sup hr small big
 	) )
 {
-	eval "sub $tag { unshift \@_, '$tag'; goto &WebTK::_autoChild; }";
+	eval "sub $tag { splice \@_, 1, 0, '$tag'; goto &WebTK::_autoChild; }";
 }
 
 sub text
