@@ -115,6 +115,15 @@ sub dynamic
 	weaken( $obj->{node} = $el );
 }
 
+sub _remove
+{
+	my $node = shift;
+	my $id = $node->getAttribute( "id" );
+
+	$node->parentNode->removeChild( $node );
+	delete $by_id{ $id };
+}
+
 sub _fixStyle
 {
 	my $hash = shift;
@@ -190,6 +199,8 @@ sub text
 	$node->addChild( $text );
 	return $text;
 }
+
+*remove = \&WebTK::_remove;
 
 1;
 
