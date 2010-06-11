@@ -115,76 +115,102 @@ function start()
 window.addEventListener( 'load', start, false );
 
 var ajax = {
+	_idle: true,
+	_timeStart: 5,
 	_req: new XMLHttpRequest(),
-	_senddata: [],
 	_recv: function ()
 	{
-		if ( ajax._req.readyState != 4 )
+		var req = ajax._req;
+
+		if ( req.readyState != 4 )
 			return;
 
 		var status;
 		try {
-			status = ajax._req.status;
+			status = req.status;
 		} catch (e) {
 			status = -1;
 		}
-		if ( status == -1 )
+
+		if ( status != 200 )
 			return;
 
-		ajax._watchdogStop();
-
-		if ( status != 200 ) {
+		if ( ! req.responseXML ||
+				! ( req.responseXML.lastChild instanceof HTMLHtmlElement ) )
 			return;
-		}
 
-		if ( !ajax._req.responseXML || ! ( thisAjax._req.responseXML.lastChild instanceof HTMLHtmlElement ) ) {
-			return;
-		}
+		/* confirm watchdog */
+		ajax._post = null;
+		ajax._idle = true;
 
 		try {
-			ajax.complete();
+			tree.update( req.responseXML );
 		} catch ( e ) {
 			error( "ajax.complete() error: " + e );
 		}
 	},
-	_send: function( url, post )
+	_send: function()
 	{
-		if ( this._req.readyState != 4 && this._req.readyState != 0 ) {
+		var req = ajax._req;
+
+		if ( req.readyState != 4 && req.readyState != 0 ) {
 			error( "Ajax request already in progress" );
 			return;
 		}
-		this._req.onreadystatechange = ajax._recv;
-		this._req.open( "POST", url, true );
-		this._req.setRequestHeader( 'Content-Type', 'application/x-www-form-urlencoded' );
-		this._req.setRequestHeader( 'Content-Length', post.length );
-		this._req.setRequestHeader( 'Connection', 'close' );
-		this._req.send( post );
 
-		this._watchdogStart();
+		req.onreadystatechange = ajax._recv;
+		req.open( "POST", ajax._uri, true );
+		req.setRequestHeader( 'Content-Type', 'application/x-www-form-urlencoded' );
+		req.setRequestHeader( 'Content-Length', ajax._post.length );
+		req.setRequestHeader( 'Connection', 'close' );
+		req.send( ajax._post );
+
+		ajax._timeStart = 0;
+		ajax._idle = false;
 	},
-	_watchdogStart: function ()
+	_watchdogRestart: function ()
 	{
+		var req = ajax._req;
+		if ( req.readyState != 4 && req.readyState != 0 )
+			req.abort();
 
-	},
-	_watchdogStop: function ()
-	{
+		ajax._req = new XMLHttpRequest();
 
+		if ( ajax._post )
+			ajax._send( );
 	},
 	tick: function ()
 	{
-
+		ajax._timeStart++;
+		if ( ajax._timeStart > 20 ) {
+			ajax._watchdogRestart();
+		} else if ( ajax._idle && ajax._timeStart > 3 ) {
+			ajax.send( "", ajax._compose() );
+		}
 	},
+
+	_init: null,
+	_data: new Array(),
+	push: function ( id, value )
+	{
+		ajax._data.push( id + '=' + value );
+	},
+	_compose: function ()
+	{
+		if ( ! ajax._init )
+			ajax._init = init();
+
+		ajax._data.unshift( ajax._init );
+
+		var str = ajax._data.join( "&" );
+		ajax._data = new Array();
+
+		return str;
+	},
+
 };
 
 window.setInterval( ajax.tick, 100 );
-
-var remoteEvent = {
-	_data: [],
-	send: function ( id, value )
-	{
-		event._data.push( id + '=' + value );
-	},
-};
 
 
 /* tk_click {{{ :*/
@@ -193,7 +219,7 @@ function callback_tk_click( e )
 	e.preventDefault();
 	e.stopPropagation();
 
-	remoteEvent.send( this.getAttribute( 'id' ), 'tk_click' );
+	ajax.push( this.getAttribute( 'id' ), 'tk_click' );
 	this.addClass( "tk_click_active" );
 }
 
@@ -211,7 +237,7 @@ function callback_tk_rclick( e )
 	e.preventDefault();
 	e.stopPropagation();
 
-	remoteEvent.send( this.getAttribute( 'id' ), 'tk_rclick' );
+	ajax.push( this.getAttribute( 'id' ), 'tk_rclick' );
 	this.addClass( "tk_rclick_active" );
 }
 
