@@ -58,62 +58,93 @@ HTMLElement.prototype.addClass = function ( acl )
 };
 /* }}} */
 
-/* */
+/* TODO: copy error message box from rsget.pl */
 function error( msg )
 {
 	window.alert( "Error: " + msg );
 }
 
+/* tree: dom tree processing methods {{{ */
+var tree = {
+	_func: {},
+	register: function register_tk_class( cl, func )
+	{
+		tree._func[ cl ] = func;
+	},
+	_check: function ( node )
+	{
+		var cl = node.getAttribute( "class" );
+		if ( !cl )
+			return;
 
-var tk_func = {};
+		var cls = cl.split( /\s+/ );
+		for ( var i = 0; i < cls.length; i++ ) {
+			var cl = cls[ i ];
+			if ( !cl.match( /^tk_/ ) )
+				continue;
 
-function register_tk_class( cl, func )
-{
-	tk_func[ cl ] = func;
-}
-
-function check_node( node )
-{
-	var cl = node.getAttribute( "class" );
-	if ( !cl )
-		return;
-
-	var cls = cl.split( /\s+/ );
-	for ( var i = 0; i < cls.length; i++ ) {
-		var cl = cls[ i ];
-		if ( !cl.match( /^tk_/ ) )
-			continue;
-
-		var func = tk_func[ cl ];
-		if ( !func ) {
-			error( "No function for " + cl );
-			continue;
+			var func = tk_func[ cl ];
+			if ( !func ) {
+				error( "No function for " + cl );
+				continue;
+			}
+			func( node );
 		}
-		func( node );
-	}
-}
+	},
+	_climb: function ( node )
+	{
+		if ( ! node )
+			return;
 
-function crawl_nodes( node )
-{
-	if ( ! node )
+		tree.check( node );
+
+		for ( var i = 0; i < node.childNodes.length; i++ ) {
+			var n = node.childNodes[ i ];
+			if ( !n || !n.nodeName || n.nodeName == '#text' )
+				continue;
+			tree._climb( n );
+		}
+	},
+	update: function ( node )
+	{
+		var id = node.getAttribute( 'id' );
+
+		if ( !id ) {
+			/* node has no id -> check all its children */
+			var c;
+			while ( c = node.firstChild ) {
+				node.removeChild( c );
+	
+				tree.update( c );
+			}
+			return;
+		}
+
+		/* some old node is to be updated */
+		var old = document.getElementById( id );
+		var cl = node.getAttribute( 'class' );
+
+		/* marked as removed ? remove */
+		if ( cl && cl == 'removed' ) {
+			old.parentNode.removeChild( old );
+			return;
+		}
+
+		/* replace original with new one */
+		/* adapt node ? import node ? */
+		old.parentNode.replaceChild( old, node );
+		tree._climb( node );
 		return;
-
-	check_node( node );
-
-	for ( var i = 0; i < node.childNodes.length; i++ ) {
-		var n = node.childNodes[ i ];
-		if ( !n || !n.nodeName || n.nodeName == '#text' )
-			continue;
-		crawl_nodes( n );
+	},
+	init: function ()
+	{
+		tree._climb( document.getElementsByTagName("body")[0] );
 	}
-}
+};
+/* }}} */
 
-function start()
-{
-	crawl_nodes( document.getElementsByTagName("body")[0] );
-}
-window.addEventListener( 'load', start, false );
 
+/* ajax: data exchange {{{ */
 var ajax = {
 	_idle: true,
 	_timeStart: 5,
@@ -144,10 +175,21 @@ var ajax = {
 		ajax._idle = true;
 
 		try {
-			tree.update( req.responseXML );
+			ajax._complete( req );
 		} catch ( e ) {
 			error( "ajax.complete() error: " + e );
 		}
+	},
+	_complete: function ( req )
+	{
+		var xml = req.responseXML;
+		if ( !xml ) {
+			var parser = new DOMParser();
+			xml = parser.parseFromString( req.responseText, "text/xml" );
+			if ( !xml )
+				throw "Cannot parse server response";
+		}
+		tree.update( /* body */ xml.lastChild.lastChild );
 	},
 	_send: function()
 	{
@@ -179,12 +221,12 @@ var ajax = {
 		if ( ajax._post )
 			ajax._send( );
 	},
-	tick: function ()
+	_tick: function ()
 	{
 		ajax._timeStart++;
 		if ( ajax._timeStart > 20 ) {
 			ajax._watchdogRestart();
-		} else if ( ajax._idle && ajax._timeStart > 3 ) {
+		} else if ( ajax._idle && ajax._timeStart > 5 ) {
 			ajax.send( "", ajax._compose() );
 		}
 	},
@@ -194,6 +236,8 @@ var ajax = {
 	push: function ( id, value )
 	{
 		ajax._data.push( id + '=' + value );
+		if ( ajax._idle && ajax._timeStart < 4 )
+			ajax._timeStart = 4;
 	},
 	_compose: function ()
 	{
@@ -207,13 +251,23 @@ var ajax = {
 
 		return str;
 	},
-
+	init: function ()
+	{
+		window.setInterval( ajax._tick, 100 );
+	}
 };
+/* }}} */
 
-window.setInterval( ajax.tick, 100 );
+function init()
+{
+	tree.init();
+	ajax.init();
+}
+
+window.addEventListener( 'load', init, false );
 
 
-/* tk_click {{{ :*/
+/* tk_click {{{ */
 function callback_tk_click( e )
 {
 	e.preventDefault();
