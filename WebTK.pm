@@ -12,10 +12,19 @@ use XML::LibXML ();
 use Scalar::Util qw(weaken);
 use List::Util qw(first);
 
-my %by_id;
+my %session;
 
-sub init
+# current session id
+my $sid;
+# ids in current session
+my $ids;
+
+my $docCache;
+sub doc
 {
+	if ( $docCache ) {
+		return $docCache->cloneNode( 1 );
+	}
 
 	my $doc = XML::LibXML::Document->new( '1.0', 'utf-8' );
 	$doc->createInternalSubset(
@@ -24,8 +33,7 @@ sub init
 		'http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd'
 	);
 
-	my $node = XML::LibXML::Comment->new( " WebTK 0.1 " );
-	$doc->addChild( $node );
+	$doc->addChild( XML::LibXML::Comment->new( " WebTK 0.1 " ) );
 
 	my $root = $doc->createElementNS( "http://www.w3.org/1999/xhtml", "html" );
 	$doc->setDocumentElement( $root );
@@ -45,13 +53,34 @@ sub init
 	$head->autoChild( 'script',
 		type => "text/javascript",
 		src => "_webtk/interface.js" );
-	$head->autoChild( 'script',
-		type => "text/javascript" )->text(
-			"function init() { return { session: 1 }; }"
-		);
 
-	my $body = $root->autoChild( 'body' );
-	$body->dynamic();
+	$docCache = $doc;
+	return $docCache->cloneNode( 1 );
+}
+
+sub init
+{
+	do {
+		$sid = sprintf "tk_%04x%04x", rand 1 << 16, rand 1 << 16;
+	} while ( exists $session{ $sid } );
+
+	$ids = {};
+
+	my $doc = doc();
+	my $root = $doc->lastChild;
+
+	# body id is the session identified, each user has different body id
+	my $body = $root->autoChild( 'body', id => $sid );
+	my $obj = $ids->{ $sid } = {};
+	weaken( $obj->{node} = $body );
+
+	$session{ $sid } = {
+		ids => $ids,
+		sid => $sid,
+		doc => $doc,
+		start => time,
+		body => $body,
+	};
 
 	return $body;
 }
@@ -86,7 +115,7 @@ sub _id
 	}
 	do {
 		$id = sprintf "tk_%04x%04x", rand 1 << 16, rand 1 << 16;
-	} while ( exists $by_id{ $id } );
+	} while ( exists $ids->{ $id } );
 	$el->setAttribute( "id", $id );
 	return $id;
 }
@@ -99,7 +128,7 @@ sub button
 	my $id = _id( $el );
 	_addClass( $el, $tkclass );
 
-	my $obj = $by_id{ $id } ||= {};
+	my $obj = $ids->{ $id } ||= {};
 	weaken( $obj->{node} = $el );
 	$obj->{$tkclass} = \@_;
 }
@@ -111,7 +140,7 @@ sub dynamic
 	my $id = _id( $el );
 	#_addClass( $el, "tk_dynamic" );
 
-	my $obj = $by_id{ $id } ||= {};
+	my $obj = $ids->{ $id } ||= {};
 	weaken( $obj->{node} = $el );
 }
 
@@ -121,7 +150,7 @@ sub _remove
 	my $id = $node->getAttribute( "id" );
 
 	$node->parentNode->removeChild( $node );
-	delete $by_id{ $id };
+	delete $ids->{ $id };
 }
 
 sub _fixStyle
