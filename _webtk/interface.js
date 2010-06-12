@@ -83,7 +83,7 @@ var tree = {
 			if ( !cl.match( /^tk_/ ) )
 				continue;
 
-			var func = tk_func[ cl ];
+			var func = tree._func[ cl ];
 			if ( !func ) {
 				error( "No function for " + cl );
 				continue;
@@ -96,7 +96,7 @@ var tree = {
 		if ( ! node )
 			return;
 
-		tree.check( node );
+		tree._check( node );
 
 		for ( var i = 0; i < node.childNodes.length; i++ ) {
 			var n = node.childNodes[ i ];
@@ -146,6 +146,8 @@ var tree = {
 
 /* ajax: data exchange {{{ */
 var ajax = {
+	_uri: "einstein", // XXX: temporary
+	_post: null,
 	_idle: true,
 	_timeStart: 5,
 	_req: new XMLHttpRequest(),
@@ -227,7 +229,8 @@ var ajax = {
 		if ( ajax._timeStart > 20 ) {
 			ajax._watchdogRestart();
 		} else if ( ajax._idle && ajax._timeStart > 5 ) {
-			ajax.send( "", ajax._compose() );
+			ajax._post = ajax._compose();
+			ajax._send( );
 		}
 	},
 
@@ -280,7 +283,7 @@ function register_tk_click( node )
 {
 	node.addEventListener( "click", callback_tk_click, false );
 }
-register_tk_class( "tk_click", register_tk_click );
+tree.register( "tk_click", register_tk_click );
 /* }}} */
 
 
@@ -298,7 +301,7 @@ function register_tk_rclick( node )
 {
 	node.addEventListener( "contextmenu", callback_tk_rclick, false );
 }
-register_tk_class( "tk_rclick", register_tk_rclick );
+tree.register( "tk_rclick", register_tk_rclick );
 /* }}} */
 
 /* vim: ts=4:sw=4:fdm=marker
