@@ -231,7 +231,6 @@ var ajax = {
 		}
 	},
 
-	_init: null,
 	_data: new Array(),
 	push: function ( id, value )
 	{
@@ -241,10 +240,10 @@ var ajax = {
 	},
 	_compose: function ()
 	{
-		if ( ! ajax._init )
-			ajax._init = init();
+		var body = document.getElementsByTagName("body")[0];
+		var sid = body.getAttribute( 'id' );
 
-		ajax._data.unshift( ajax._init );
+		ajax._data.unshift( 'session=' + sid );
 
 		var str = ajax._data.join( "&" );
 		ajax._data = new Array();
