@@ -32,5 +32,21 @@
 }
 /* }}} */
 
+div#tk_errors {
+	position: fixed;
+	bottom: 10px;
+	left: 10px;
+	background: transparent;
+	z-index: 1001;
+	width: 600px;
+	display: block;
+}
+div#tk_errors > p {
+	border: 2px solid #a22;
+	color: #a22;
+	margin: 3px;
+	background: #eee;
+}
+
 /* vim: ts=4:sw=4:fdm=marker
  */

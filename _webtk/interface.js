@@ -58,10 +58,28 @@ HTMLElement.prototype.addClass = function ( acl )
 };
 /* }}} */
 
-/* TODO: copy error message box from rsget.pl */
+var xmlns = "http://www.w3.org/1999/xhtml";
 function error( msg )
 {
-	window.alert( "Error: " + msg );
+	var board = document.getElementById( 'tk_errors' );
+	if ( ! board ) {
+		var body = document.getElementsByTagName( 'body' )[0];
+		board = document.createElementNS( xmlns, 'div' );
+		board.setAttribute( 'id', 'tk_errors' );
+		body.appendChild( board );
+	}
+
+	var p = document.createElementNS( xmlns, 'p' );
+	p.appendChild( document.createTextNode( msg ) );
+	board.appendChild( p );
+	window.setTimeout( _error_rm, 1000, p );
+}
+function _error_rm( node )
+{
+	var board = node.parentNode;
+	board.removeChild( node );
+	if ( ! board.firstChild )
+		board.parentNode.removeChild( board );
 }
 
 /* tree: dom tree processing methods {{{ */
