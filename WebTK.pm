@@ -77,6 +77,24 @@ sub process
 		&$func;
 	}
 
+	foreach my $id ( keys %$ids ) {
+		my $obj = $ids->{ $id };
+		my $ev = $obj->{tk_update};
+		next unless $ev;
+
+		my @nodes = $session->{doc}->findnodes( "//*[\@id='$id'][1]" );
+		unless ( $_ = shift @nodes ) {
+			warn "Node with id '$id' no longer exists\n";
+			next;
+		}
+
+		@_ = @$ev;
+		my $func = shift @_;
+		die "Callback is not code\n"
+		    unless ref $func eq "CODE";
+		&$func;
+	}
+
 	my $doc = _doc();
 	my $root = $doc->lastChild;
 	my $update = $session->{update};
@@ -263,14 +281,25 @@ sub dynamic
 	$session->{ids}->{ $id } ||= {};
 }
 
+sub _update
+{
+	my $el = shift;
+
+	my $id = _id( $el );
+
+	my $obj = $session->{ids}->{ $id } ||= {};
+	$obj->{tk_update} = \@_;
+}
+
 sub _remove
 {
 	my $node = shift;
 	my $id = $node->getAttribute( "id" );
 
-	$node->parentNode->removeChild( $node );
+	my $p = $node->parentNode;
+	$p->removeChild( $node );
 	delete $session->{ids}->{ $id };
-	$session->{update}->{ $id } = 1;
+	_refresh( $p );
 }
 
 sub _refresh
@@ -281,7 +310,7 @@ sub _refresh
 	do {
 		$id = $node->getAttribute( "id" );
 		$node = $node->parentNode;
-	} until ( $id =~ /^tk_[0-9a-f]+$/ );
+	} until ( $id and $id =~ /^tk_[0-9a-f]+$/ );
 
 	$session->{update}->{ $id } = 1;
 }
@@ -338,6 +367,9 @@ sub dynamic
 {
 	goto &WebTK::dynamic
 }
+
+# callback called on each update
+*update = \&WebTK::_update;
 
 *autoChild = \&WebTK::_autoChild;
 
