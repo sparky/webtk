@@ -14,10 +14,27 @@ use List::Util qw(first);
 
 my %session;
 
-# current session id
-my $sid;
-# ids in current session
-my $ids;
+# current session
+my $session;
+
+
+my %parent_type = (
+	body => "html",
+	li => "ol",
+	tbody => "table",
+	thead => "table",
+	tfoot => "table",
+	tr => "tbody",
+	td => "tr",
+	th => "tr",
+	caption => "table",
+	col => "table",
+	colgroup => "col",
+	dt => "dl",
+	dd => "dl",
+	legend => "fieldset",
+	# everything else requires <body>
+);
 
 
 sub process
@@ -26,14 +43,12 @@ sub process
 
 	my @post = split /&/, $post;
 	die "WebTK::process: No post" unless @post;
-	my $_sid = shift @post;
-	$_sid =~ s/^session=// or die "WebTK::process: No session";
+	my $sid = shift @post;
+	$sid =~ s/^session=// or die "WebTK::process: No session";
 
-	die "WebTK::process: Session expired" unless $session{ $_sid };
+	die "WebTK::process: Session expired" unless $session = $session{ $sid };
 
-	$sid = $_sid;
-	my $session = $session{ $sid };
-	$ids = $session->{ids};
+	my $ids = $session->{ids};
 
 	while ( $_ = shift @post ) {
 		s/^(tk_.+?)=//;
@@ -49,7 +64,12 @@ sub process
 			next;
 		}
 
-		local $_ = $el->{node};
+		my @nodes = $session->{doc}->findnodes( "//*[\@id='$id'][1]" );
+		unless ( $_ = shift @nodes ) {
+			warn "Node with id '$id' no longer exists\n";
+			next;
+		}
+
 		@_ = @$ev;
 		my $func = shift @_;
 		die "Callback is not code\n"
@@ -57,19 +77,66 @@ sub process
 		&$func;
 	}
 
-	return $session->{doc}->serialize( 0 );
+	my $doc = _doc();
+	my $root = $doc->lastChild;
+	my $update = $session->{update};
+
+	foreach my $id ( keys %$update ) {
+		next unless $update->{ $id };
+		warn "Checking $id\n";
+
+		my @nodes = $session->{doc}->findnodes( "//*[\@id='$id'][1]" );
+		my $node = shift @nodes;
+		@nodes = $node->findnodes( './/*[@id]' );
+		foreach my $node ( @nodes ) {
+			my $id = $node->getAttribute( 'id' );
+			warn "Deleted $id\n" if delete $update->{ $id };
+		}
+	}
+
+	my %holders = ( html => $root );
+	foreach my $id ( keys %$update ) {
+		next unless $update->{ $id };
+		my @nodes = $session->{doc}->findnodes( "//*[\@id='$id'][1]" );
+		my $node = shift @nodes;
+
+		my $name = $node->nodeName;
+		my $parent = _make_holder( \%holders, $parent_type{ $name } || "body" );
+		$parent->addChild( $node->cloneNode( 1 ) );
+	}
+	# make sure body exists
+	_make_holder( \%holders, "body" ) unless ( %$update );
+
+	$session->{update} = {};
+
+	#$doc->validate();
+	return $doc->serialize( 0 );
+}
+
+sub _make_holder
+{
+	my $hs = shift;
+	my $name = shift;
+	return $hs->{ $name } if $hs->{ $name };
+
+	my $parent = $parent_type{ $name } || "body";
+
+	unless ( $hs->{ $parent } ) {
+		_make_holder( $hs, $parent );
+	}
+
+	return $hs->{ $name } = $hs->{ $parent }->autoChild( $name );
 }
 
 sub new
 {
 	my $init = shift;
 
-	my $session = WebTK::_init();
-	$sid = $session->{sid};
-	$ids = $session->{ids};
+	$session = WebTK::_init();
 
 	&$init( $session->{body} );
 
+	#$session->{doc}->validate();
 	return $session->{doc}->serialize( 0 );
 }
 
@@ -114,26 +181,24 @@ sub _doc
 
 sub _init
 {
+	my $sid;
 	do {
 		$sid = sprintf "tk_%04x%04x", rand 1 << 16, rand 1 << 16;
 	} while ( exists $session{ $sid } );
-
-	$ids = {};
 
 	my $doc = _doc();
 	my $root = $doc->lastChild;
 
 	# body id is the session identified, each user has different body id
 	my $body = $root->autoChild( 'body', id => $sid );
-	my $obj = $ids->{ $sid } = {};
-	weaken( $obj->{node} = $body );
 
 	return $session{ $sid } = {
-		ids => $ids,
+		ids => { $sid => {} },
 		sid => $sid,
 		doc => $doc,
 		start => time,
 		body => $body,
+		update => {},
 	};
 }
 
@@ -167,7 +232,7 @@ sub _id
 	}
 	do {
 		$id = sprintf "tk_%04x%04x", rand 1 << 16, rand 1 << 16;
-	} while ( exists $ids->{ $id } );
+	} while ( exists $session->{ids}->{ $id } );
 	$el->setAttribute( "id", $id );
 	return $id;
 }
@@ -180,8 +245,7 @@ sub button
 	my $id = _id( $el );
 	_addClass( $el, $tkclass );
 
-	my $obj = $ids->{ $id } ||= {};
-	weaken( $obj->{node} = $el );
+	my $obj = $session->{ids}->{ $id } ||= {};
 
 	die "First button argument must be code reference (callback)\n"
 		unless ref $_[0] and ref $_[0] eq "CODE";
@@ -196,8 +260,7 @@ sub dynamic
 	my $id = _id( $el );
 	#_addClass( $el, "tk_dynamic" );
 
-	my $obj = $ids->{ $id } ||= {};
-	weaken( $obj->{node} = $el );
+	$session->{ids}->{ $id } ||= {};
 }
 
 sub _remove
@@ -206,7 +269,21 @@ sub _remove
 	my $id = $node->getAttribute( "id" );
 
 	$node->parentNode->removeChild( $node );
-	delete $ids->{ $id };
+	delete $session->{ids}->{ $id };
+	$session->{update}->{ $id } = 1;
+}
+
+sub _refresh
+{
+	my $node = shift;
+	my $id;
+
+	do {
+		$id = $node->getAttribute( "id" );
+		$node = $node->parentNode;
+	} until ( $id =~ /^tk_[0-9a-f]+$/ );
+
+	$session->{update}->{ $id } = 1;
 }
 
 sub _fixStyle
@@ -286,6 +363,8 @@ sub text
 }
 
 *remove = \&WebTK::_remove;
+
+*refresh = \&WebTK::_refresh;
 
 1;
 
