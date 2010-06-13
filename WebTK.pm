@@ -19,8 +19,62 @@ my $sid;
 # ids in current session
 my $ids;
 
+
+sub process
+{
+	my $post = shift;
+
+	my @post = split /&/, $post;
+	die "WebTK::process: No post" unless @post;
+	my $_sid = shift @post;
+	$_sid =~ s/^session=// or die "WebTK::process: No session";
+
+	die "WebTK::process: Session expired" unless $session{ $_sid };
+
+	$sid = $_sid;
+	my $session = $session{ $sid };
+	$ids = $session->{ids};
+
+	while ( $_ = shift @post ) {
+		s/^(tk_.+?)=//;
+		my $id = $1;
+		my $el = $ids->{ $id };
+		unless ( $el ) {
+			warn "Element with id '$id' cannot be found\n";
+			next;
+		}
+		my $ev = $el->{ $_ };
+		unless ( $ev ) {
+			warn "Element '$id' has no event $_\n";
+			next;
+		}
+
+		local $_ = $el->{node};
+		@_ = @$ev;
+		my $func = shift @_;
+		die "Callback is not code\n"
+			unless ref $func eq "CODE";
+		&$func;
+	}
+
+	return $session->{doc}->serialize( 0 );
+}
+
+sub new
+{
+	my $init = shift;
+
+	my $session = WebTK::_init();
+	$sid = $session->{sid};
+	$ids = $session->{ids};
+
+	&$init( $session->{body} );
+
+	return $session->{doc}->serialize( 0 );
+}
+
 my $docCache;
-sub doc
+sub _doc
 {
 	if ( $docCache ) {
 		return $docCache->cloneNode( 1 );
@@ -58,7 +112,7 @@ sub doc
 	return $docCache->cloneNode( 1 );
 }
 
-sub init
+sub _init
 {
 	do {
 		$sid = sprintf "tk_%04x%04x", rand 1 << 16, rand 1 << 16;
@@ -66,7 +120,7 @@ sub init
 
 	$ids = {};
 
-	my $doc = doc();
+	my $doc = _doc();
 	my $root = $doc->lastChild;
 
 	# body id is the session identified, each user has different body id
@@ -74,15 +128,13 @@ sub init
 	my $obj = $ids->{ $sid } = {};
 	weaken( $obj->{node} = $body );
 
-	$session{ $sid } = {
+	return $session{ $sid } = {
 		ids => $ids,
 		sid => $sid,
 		doc => $doc,
 		start => time,
 		body => $body,
 	};
-
-	return $body;
 }
 
 
@@ -130,6 +182,10 @@ sub button
 
 	my $obj = $ids->{ $id } ||= {};
 	weaken( $obj->{node} = $el );
+
+	die "First button argument must be code reference (callback)\n"
+		unless ref $_[0] and ref $_[0] eq "CODE";
+
 	$obj->{$tkclass} = \@_;
 }
 
