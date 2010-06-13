@@ -11,7 +11,7 @@ sub cell_click
 
 sub test
 {
-	my $webtk = WebTK::init;
+	my $webtk = shift;
 
 	my $table = $webtk->table->tbody;
 	foreach my $row ( 1..6 ) {
@@ -30,8 +30,7 @@ sub test
 		}
 	}
 
-	print $webtk->ownerDocument->serialize( 1 );
 }
 
 
-test();
+print WebTK::new( \&test );
