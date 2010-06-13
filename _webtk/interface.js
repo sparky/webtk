@@ -138,13 +138,9 @@ var tree = {
 			return;
 		}
 
-		/* some old node is to be updated */
 		var old = document.getElementById( id );
-		var cl = node.getAttribute( 'class' );
-
-		/* marked as removed ? remove */
-		if ( cl && cl == 'removed' ) {
-			old.parentNode.removeChild( old );
+		if ( !old ) {
+			error( "Node with id '" + id + "' does not exist" );
 			return;
 		}
 
