@@ -150,7 +150,7 @@ var tree = {
 
 		/* replace original with new one */
 		/* adapt node ? import node ? */
-		old.parentNode.replaceChild( old, node );
+		old.parentNode.replaceChild( node, old );
 		tree._climb( node );
 		return;
 	},
